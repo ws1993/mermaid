@@ -1,39 +1,97 @@
 name: Lint
 
 on:
-  push: {}
+  push:
+  merge_group:
   pull_request:
-    types:
-      - opened
-      - synchronize
-      - ready_for_review
+  workflow_dispatch:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
+  docker-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
+        with:
+          verbose: true
   lint:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x]
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        cache: yarn
-        node-version: ${{ matrix.node-version }}
+      - uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+        # uses version from "packageManager" field in package.json
 
-    - name: Install Yarn
-      run: npm i yarn --global
+      - name: Setup Node.js
+        uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
+        with:
+          cache: pnpm
+          node-version-file: '.node-version'
 
-    - name: Install Packages
-      run: |
-        yarn install --frozen-lockfile
-      env:
-        CYPRESS_CACHE_FOLDER: .cache/Cypress
+      - name: Install Packages
+        run: |
+          pnpm install --frozen-lockfile
+        env:
+          CYPRESS_CACHE_FOLDER: .cache/Cypress
 
-    - name: Run Linting
-      run: yarn lint
+      - name: Run Linting
+        shell: bash
+        run: |
+          if ! pnpm run lint; then
+              # print a nice error message on lint failure
+              ERROR_MESSAGE='Running `pnpm run lint` failed.'
+              ERROR_MESSAGE+=' Running `pnpm -w run lint:fix` may fix this issue. '
+              ERROR_MESSAGE+=" If this error doesn't occur on your local machine,"
+              ERROR_MESSAGE+=' make sure your packages are up-to-date by running `pnpm install`.'
+              ERROR_MESSAGE+=' You may also need to delete your prettier cache by running'
+              ERROR_MESSAGE+=' `rm ./node_modules/.cache/prettier/.prettier-cache`.'
+              echo "::error title=Lint failure::${ERROR_MESSAGE}"
+              # make sure to return an error exitcode so that GitHub actions shows a red-cross
+              exit 1
+          fi
+
+      - name: Verify `./src/config.type.ts` is in sync with `./src/schemas/config.schema.yaml`
+        shell: bash
+        run: |
+          if ! pnpm run --filter mermaid types:verify-config; then
+            ERROR_MESSAGE='Running `pnpm run --filter mermaid types:verify-config` failed.'
+            ERROR_MESSAGE+=' This should be fixed by running'
+            ERROR_MESSAGE+=' `pnpm run --filter mermaid types:build-config`'
+            ERROR_MESSAGE+=' on your local machine.'
+            echo "::error title=Lint failure::${ERROR_MESSAGE}"
+            # make sure to return an error exitcode so that GitHub actions shows a red-cross
+            exit 1
+          fi
+
+      - name: Verify no circular dependencies
+        working-directory: ./packages/mermaid
+        shell: bash
+        run: |
+          if ! pnpm run --filter mermaid checkCircle; then
+            ERROR_MESSAGE='Circular dependency detected.'
+            ERROR_MESSAGE+=' This should be fixed by removing the circular dependency.'
+            ERROR_MESSAGE+=' Run `pnpm run --filter mermaid checkCircle` on your local machine'
+            ERROR_MESSAGE+=' to see the circular dependency.'
+            echo "::error title=Lint failure::${ERROR_MESSAGE}"
+            # make sure to return an error exitcode so that GitHub actions shows a red-cross
+            exit 1
+          fi
+
+      - name: Verify Docs
+        id: verifyDocs
+        working-directory: ./packages/mermaid
+        continue-on-error: ${{ github.event_name == 'push' }}
+        run: pnpm run docs:verify
+
+      - uses: testomatio/check-tests@0ea638fcec1820cf2e7b9854fdbdd04128a55bd4 # stable
+        with:
+          framework: cypress
+          tests: './cypress/e2e/**/**.spec.js'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          has-tests-label: true
