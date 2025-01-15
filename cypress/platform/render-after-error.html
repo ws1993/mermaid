@@ -1,29 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Mermaid Quick Test Page</title>
-        <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
-    </head>
-    <body>
-        <div id="graph">
-        </div>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Mermaid Quick Test Page</title>
+    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=" />
+  </head>
+  <body>
+    <div id="graph"></div>
 
-        <script src="./mermaid.js"></script>
-        <script>mermaid.init({ startOnLoad: false });
+    <script type="module">
+      import mermaid from './mermaid.esm.mjs';
+      await mermaid.initialize({ startOnLoad: false });
+      await mermaid.run();
 
-         mermaid.mermaidAPI.initialize({ securityLevel: 'strict' });
+      await mermaid.mermaidAPI.initialize({ securityLevel: 'strict' });
+      try {
+        console.log('rendering');
+        await mermaid.mermaidAPI.render('graphDiv', `>`);
+      } catch (e) {}
 
-         try {
-           console.log('rendering');
-           mermaid.mermaidAPI.render('graphDiv', `>`);
-         } catch (e) {}
-
-         mermaid.mermaidAPI.render('graphDiv', `graph LR\n a --> b`, (html) => {
-           document.getElementById('graph').innerHTML = html;
-         });
-        </script>
-
-    </body>
+      const { svg } = await mermaid.mermaidAPI.render('graphDiv', `graph LR\n a --> b`);
+      document.getElementById('graph').innerHTML = svg;
+    </script>
+  </body>
 </html>
