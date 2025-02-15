@@ -1,4 +1,5 @@
-import mermaid from '../../dist/mermaid.core';
+// TODO: this file should be testing the ./mermaid.core.mjs file, as that's the file listed in the package.json file that users will use
+import mermaid from './mermaid.esm.mjs';
 
 let code = `flowchart LR
 Power_Supply --> Transmitter_A
@@ -26,7 +27,7 @@ const code3 = `flowchart TD
 A(<img scr='https://iconscout.com/ms-icon-310x310.png' width='20' height='20' />)
 B(<b>Bold text!</b>)`;
 
-if (location.href.match('test-html-escaping')) {
+if (/test-html-escaping/.exec(location.href)) {
   code = code3;
 }
 
@@ -49,13 +50,9 @@ mermaid.initialize({
     ],
   },
 });
-mermaid.render(
-  'the-id-of-the-svg',
-  code,
-  (svg) => {
-    console.log(svg);
-    const elem = document.querySelector('#graph-to-be');
-    elem.innerHTML = svg;
-  }
-  // ,document.querySelector('#tmp')
-);
+void (async () => {
+  const { svg } = await mermaid.render('the-id-of-the-svg', code);
+  console.log(svg);
+  const elem = document.querySelector('#graph-to-be');
+  elem.innerHTML = svg;
+})();

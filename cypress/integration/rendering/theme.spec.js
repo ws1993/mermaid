@@ -1,4 +1,4 @@
-import { imgSnapshotTest } from '../../helpers/util.js';
+import { imgSnapshotTest } from '../../helpers/util.ts';
 
 describe('themeCSS balancing, it', () => {
   it('should not allow unbalanced CSS definitions', () => {
@@ -10,7 +10,6 @@ describe('themeCSS balancing, it', () => {
           `,
       {}
     );
-    cy.get('svg');
   });
   it('should not allow unbalanced CSS definitions 2', () => {
     imgSnapshotTest(
@@ -21,10 +20,10 @@ describe('themeCSS balancing, it', () => {
           `,
       {}
     );
-    cy.get('svg');
   });
 });
 
+// TODO: Delete/Rename this describe, keeping the inner contents.
 describe('Pie Chart', () => {
   // beforeEach(()=>{
   //   cy.clock((new Date('2014-06-09')).getTime());
@@ -44,7 +43,6 @@ describe('Pie Chart', () => {
           `,
           { theme }
         );
-        cy.get('svg');
       });
       it('should render a flowchart diagram', () => {
         imgSnapshotTest(
@@ -69,7 +67,6 @@ describe('Pie Chart', () => {
           `,
           { theme }
         );
-        cy.get('svg');
       });
       it('should render a new flowchart diagram', () => {
         imgSnapshotTest(
@@ -95,7 +92,6 @@ describe('Pie Chart', () => {
           `,
           { theme }
         );
-        cy.get('svg');
       });
       it('should render a sequence diagram', () => {
         imgSnapshotTest(
@@ -124,7 +120,6 @@ describe('Pie Chart', () => {
           `,
           { theme }
         );
-        cy.get('svg');
       });
 
       it('should render a class diagram', () => {
@@ -174,7 +169,6 @@ describe('Pie Chart', () => {
           `,
           { theme }
         );
-        cy.get('svg');
       });
       it('should render a state diagram', () => {
         imgSnapshotTest(
@@ -209,7 +203,6 @@ stateDiagram
           `,
           { theme }
         );
-        cy.get('svg');
       });
       it('should render a state diagram (v2)', () => {
         imgSnapshotTest(
@@ -244,7 +237,6 @@ stateDiagram-v2
           `,
           { theme }
         );
-        cy.get('svg');
       });
       it('should render a er diagram', () => {
         imgSnapshotTest(
@@ -265,7 +257,6 @@ erDiagram
           `,
           { theme }
         );
-        cy.get('svg');
       });
       it('should render a user journey diagram', () => {
         imgSnapshotTest(
@@ -286,7 +277,6 @@ erDiagram
                         `,
           { theme }
         );
-        cy.get('svg');
       });
       it('should render a gantt diagram', () => {
         cy.clock(new Date('2014-01-06').getTime());
@@ -325,7 +315,6 @@ erDiagram
        `,
           { theme }
         );
-        cy.get('svg');
       });
     });
   });

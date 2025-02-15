@@ -3,8 +3,10 @@
 node_modules/
 coverage/
 .idea/
+.pnpm-store/
 
 dist
+v8-compile-cache-0
 
 yarn-error.log
 .npmrc
@@ -12,7 +14,11 @@ token
 
 package-lock.json
 
-.vscode/
+# ignore files in /.vscode/ except for launch.json and extensions.json
+/.vscode/**
+!/.vscode/launch.json
+!/.vscode/extensions.json
+
 cypress/platform/current.html
 cypress/platform/experimental.html
 local/
@@ -26,3 +32,23 @@ cypress/snapshots/
 
 # eslint --cache file
 .eslintcache
+.tsbuildinfo
+tsconfig.tsbuildinfo
+
+#knsv*.html
+local*.html
+stats/
+
+**/user-avatars/*
+**/contributor-names.json
+.pnpm-store
+.nyc_output
+
+demos/dev/**
+!/demos/dev/example.html
+!/demos/dev/reload.js
+tsx-0/**
+vite.config.ts.timestamp-*
+
+# autogenereated by langium-cli
+generated/
